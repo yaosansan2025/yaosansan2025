@@ -1,5 +1,7 @@
 ## Hi there 👋
 
+[![Discord 状态](https://lanyard.cnrad.dev/api/1347445329146155100)](https://discord.com/users/1347445329146155100)
+
 <!--
 **yaosansan2025/yaosansan2025** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
