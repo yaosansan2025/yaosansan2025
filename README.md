@@ -1,4 +1,4 @@
-## Hi there 👋
+## Hello!!!
 
 [![Discord 状态](https://raw.githubusercontent.com/yaosansan2025/yaosansan2025/main/assets/discord-status.svg)](https://discord.com/users/1347445329146155100)
 
