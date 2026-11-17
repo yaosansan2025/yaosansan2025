@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+from time import time_ns
 import urllib.request
 from zoneinfo import ZoneInfo
 
@@ -104,24 +105,54 @@ def shorten(value, limit):
     return value if len(value) <= limit else value[: limit - 1] + "…"
 
 
+def playback_time(milliseconds):
+    minutes, seconds = divmod(milliseconds // 1000, 60)
+    return f"{minutes:02d}:{seconds:02d}"
+
+
+def render_playback_progress(spotify):
+    timestamps = spotify.get("timestamps") or {}
+    start = timestamps.get("start")
+    end = timestamps.get("end")
+    if type(start) is not int or type(end) is not int or end <= start:
+        return ""
+    duration = end - start
+    elapsed = min(duration, max(0, time_ns() // 1_000_000 - start))
+    track_width = 246
+    fill = track_width * elapsed / duration
+    return f'''    <g id="spotify-progress" transform="translate(120 87)"
+       aria-label="{playback_time(elapsed)} of {playback_time(duration)}">
+      <text x="0" y="4" font-family="monospace" font-size="11" fill="#f0f6fc">{playback_time(elapsed)}</text>
+      <rect x="45" y="-2" width="{track_width}" height="4" rx="2" fill="#41444b"/>
+      <rect x="45" y="-2" width="{fill:.1f}" height="4" rx="2" fill="#f0f6fc"/>
+      <text x="336" y="4" text-anchor="end" font-family="monospace" font-size="11" fill="#f0f6fc">{playback_time(duration)}</text>
+    </g>
+'''
+
+
 def render_spotify(spotify, cover, top):
     title = escape(shorten(spotify["song"], 38))
-    artist = escape(shorten(spotify.get("artist") or "Unknown artist", 46))
+    artist = escape(shorten((spotify.get("artist") or "Unknown artist").replace("; ", ", "), 46))
     cover_markup = (
-        '<image x="24" y="16" width="56" height="56" href="{}"/>'.format(escape(cover, quote=True))
+        '<image x="24" y="18" width="80" height="80" clip-path="url(#spotify-cover)" href="{}"/>'.format(
+            escape(cover, quote=True)
+        )
         if cover
-        else '<rect x="24" y="16" width="56" height="56" rx="12" fill="#30363d"/>'
-        '<path d="M50 56V34l13-3v6l-10 2v15a4 4 0 1 1-3-4" fill="#1ed760"/>'
+        else '<rect x="24" y="18" width="80" height="80" rx="10" fill="#30363d"/>'
+        '<path d="M61 72V43l18-4v8l-14 3v20a5 5 0 1 1-4-5" fill="#1ed760"/>'
     )
     return '''<g transform="translate(0 {top})">
     <path d="M24 0h432" stroke="#30363d"/>
+    <defs><clipPath id="spotify-cover"><rect x="24" y="18" width="80" height="80" rx="10"/></clipPath></defs>
     {cover}
-    <svg x="98" y="8" width="358" height="66" overflow="hidden">
-      <text x="0" y="16" font-size="12" font-weight="700" fill="#1ed760">Listening on Spotify</text>
-      <text x="0" y="37" font-size="18" font-weight="600" fill="#f0f6fc">{title}</text>
-      <text x="0" y="57" font-size="14" fill="#b5bac1">{artist}</text>
+    <svg x="120" y="20" width="336" height="55" overflow="hidden">
+      <text x="0" y="11" font-size="11" font-weight="700" fill="#1ed760">LISTENING ON SPOTIFY</text>
+      <text x="0" y="34" font-size="18" font-weight="600" fill="#f0f6fc">{title}</text>
+      <text x="0" y="53" font-size="14" fill="#b5bac1">{artist}</text>
     </svg>
-  </g>'''.format(top=top, cover=cover_markup, title=title, artist=artist)
+{progress}  </g>'''.format(
+        top=top, cover=cover_markup, title=title, artist=artist, progress=render_playback_progress(spotify)
+    )
 
 
 def render_card(data, avatar, icon, spotify=None, cover=None):
@@ -154,7 +185,7 @@ def render_card(data, avatar, icon, spotify=None, cover=None):
             music_desc += " by " + escape(shorten(spotify["artist"], 120))
         activity_desc += (" — " if activity_desc else "") + "Listening on Spotify: " + music_desc
     spotify_markup = render_spotify(spotify, cover, 192 if activity else 96) if spotify else ""
-    height = 288 if activity and spotify else 192
+    height = (192 if activity else 96) + 116 if spotify else 192
     return '''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="{height}" viewBox="0 0 480 {height}" role="img" aria-labelledby="title desc">
   <title id="title">Discord status</title>
   <desc id="desc">{username} — {status} — {activity_desc}</desc>
