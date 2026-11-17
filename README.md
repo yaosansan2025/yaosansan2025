@@ -1,6 +1,6 @@
 ## Hello!!!
 
-[![Discord 状态](https://raw.githubusercontent.com/yaosansan2025/yaosansan2025/main/assets/discord-status.svg)](https://discord.com/users/1347445329146155100)
+[![Discord Presence](https://lanyard.cnrad.dev/api/1347445329146155100?animated=true&showDisplayName=true&borderRadius=0&idleMessage=No%20current%20activity%2E&theme=dark)](https://discord.com/users/1347445329146155100)
 
 <!--
 **yaosansan2025/yaosansan2025** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
